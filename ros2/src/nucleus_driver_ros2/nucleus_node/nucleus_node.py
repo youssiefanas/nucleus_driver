@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, DurabilityPolicy, HistoryPolicy, ReliabilityPolicy
 from threading import Thread
 from rclpy._rclpy_pybind11 import RCLError
 
@@ -34,6 +35,13 @@ class NucleusNode(Node):
 
         self.nucleus_driver = NucleusDriver()
 
+        # Publisher QoS Profile
+        qos_profile = QoSProfile(
+            depth=2,
+            history=HistoryPolicy.KEEP_LAST,
+            reliability=ReliabilityPolicy.BEST_EFFORT
+            )
+
         self.connect_tcp_service = self.create_service(ConnectTcp, "nucleus_node/connect_tcp", self.connect_tcp_callback)
         self.connect_serial_service = self.create_service(ConnectSerial, "nucleus_node/connect_serial", self.connect_serial_callback)
         self.disconnect_service = self.create_service(Disconnect, "nucleus_node/disconnect", self.disconnect_callback)
@@ -42,15 +50,15 @@ class NucleusNode(Node):
         self.stop_service = self.create_service(Stop, "nucleus_node/stop", self.stop_callback)
         self.command_service = self.create_service(Command, "nucleus_node/command", self.command_callback)
 
-        self.ahrs_publisher = self.create_publisher(AHRS, "nucleus_node/ahrs_packets", 100)
-        self.altimeter_publisher = self.create_publisher(Altimeter, "nucleus_node/altimeter_packets", 100)
-        self.bottom_track_publisher = self.create_publisher(BottomTrack, "nucleus_node/bottom_track_packets", 100)
-        self.water_track_publisher = self.create_publisher(WaterTrack, "nucleus_node/water_track_packets", 100)
-        self.current_profile_publisher = self.create_publisher(CurrentProfile, "nucleus_node/current_profile_packets", 100)
-        self.field_calibration_publisher = self.create_publisher(FieldCalibration, "nucleus_node/field_calibration_packets", 100)
-        self.imu_publisher = self.create_publisher(IMU, "nucleus_node/imu_packets", 100)
-        self.ins_publisher = self.create_publisher(INS, "nucleus_node/ins_packets", 100)
-        self.mag_publisher = self.create_publisher(Magnetometer, "nucleus_node/magnetometer_packets", 100)
+        self.ahrs_publisher = self.create_publisher(AHRS, "nucleus_node/ahrs_packets", qos_profile)
+        self.altimeter_publisher = self.create_publisher(Altimeter, "nucleus_node/altimeter_packets", qos_profile)
+        self.bottom_track_publisher = self.create_publisher(BottomTrack, "nucleus_node/bottom_track_packets", qos_profile)
+        self.water_track_publisher = self.create_publisher(WaterTrack, "nucleus_node/water_track_packets", qos_profile)
+        self.current_profile_publisher = self.create_publisher(CurrentProfile, "nucleus_node/current_profile_packets", qos_profile)
+        self.field_calibration_publisher = self.create_publisher(FieldCalibration, "nucleus_node/field_calibration_packets", qos_profile)
+        self.imu_publisher = self.create_publisher(IMU, "nucleus_node/imu_packets", qos_profile)
+        self.ins_publisher = self.create_publisher(INS, "nucleus_node/ins_packets", qos_profile)
+        self.mag_publisher = self.create_publisher(Magnetometer, "nucleus_node/magnetometer_packets", qos_profile)
 
         self.start_thread_timer = self.create_timer(0.1, self.start_thread) # This ensures that the thread is started after the node is initialized and rcplpy.spin() is called
 
